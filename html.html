@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX プレイヤー性格診断</title>
+    <!-- Google Fonts から近未来的なフォントを読み込み -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --apex-red: #ff4655;
+            --apex-red-hover: #ff2b3c;
+            --apex-green: #00ff88;
+            --apex-cyan: #00f3ff;
+            --apex-gold: #ffba00;
+            --bg-dark: #0a0c10;
+            --card-bg: rgba(20, 24, 33, 0.85);
+            --card-border: #2a3245;
+            --input-bg: #141923;
+            --text-main: #e6e8ec;
+            --text-sub: #8c9ba5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 70, 85, 0.15), transparent 70%),
+                radial-gradient(circle at 80% 80%, rgba(0, 243, 255, 0.08), transparent 50%),
+                linear-gradient(rgba(10, 12, 16, 0.9), rgba(10, 12, 16, 0.9)),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.02) 2px, rgba(255, 255, 255, 0.02) 4px);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 40px 15px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 760px;
+            position: relative;
+        }
+
+        /* ヘッダーデザイン */
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+            position: relative;
+        }
+
+        .title-tag {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            color: var(--apex-cyan);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+        }
+
+        h1 {
+            font-family: 'Orbitron', 'Noto Sans JP', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px rgba(255, 70, 85, 0.6);
+            display: inline-block;
+            position: relative;
+            padding: 0 10px;
+        }
+
+        h1::before, h1::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30px;
+            height: 3px;
+            background-color: var(--apex-red);
+            transform: translateY(-50%);
+        }
+
+        h1::before { left: -40px; }
+        h1::after { right: -40px; }
+
+        /* カードスタイル */
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-left: 4px solid var(--apex-red);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            position: relative;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            /* サイバー的な角削り */
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+        }
+
+        .question-card:hover {
+            border-color: rgba(255, 70, 85, 0.5);
+            box-shadow: 0 10px 30px rgba(255, 70, 85, 0.15);
+        }
+
+        .question-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .question-title::before {
+            content: '>';
+            font-family: 'Orbitron', sans-serif;
+            color: var(--apex-green);
+            font-weight: 900;
+            font-size: 1.3rem;
+            text-shadow: 0 0 8px var(--apex-green);
+        }
+
+        label.select-label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        /* セレクトボックス改修 */
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%2300ff88' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+
+        select:focus, select:hover {
+            border-color: var(--apex-green);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+        }
+
+        /* ラジオボタンデザイン改修 */
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            padding: 12px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            user-select: none;
+        }
+
+        .radio-label:hover {
+            background: #1c2333;
+            border-color: rgba(0, 243, 255, 0.4);
+            transform: translateX(4px);
+        }
+
+        .radio-label input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--text-sub);
+            border-radius: 2px;
+            margin-right: 12px;
+            outline: none;
+            position: relative;
+            transition: all 0.2s;
+            transform: rotate(45deg);
+            flex-shrink: 0;
+        }
+
+        .radio-label input[type="radio"]:checked {
+            border-color: var(--apex-cyan);
+            background-color: var(--apex-cyan);
+            box-shadow: 0 0 10px var(--apex-cyan);
+        }
+
+        .radio-label input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 8px;
+            height: 8px;
+            background-color: var(--bg-dark);
+        }
+
+        .radio-label:has(input[type="radio"]:checked) {
+            border-color: var(--apex-cyan);
+            background: rgba(0, 243, 255, 0.05);
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        /* ボタンデザイン */
+        button.submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--apex-red), #b31220);
+            color: #ffffff;
+            border: none;
+            padding: 18px;
+            font-family: 'Orbitron', 'Noto Sans JP', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(255, 70, 85, 0.4);
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+        }
+
+        button.submit-btn:hover {
+            background: linear-gradient(135deg, #ff5e6c, var(--apex-red));
+            box-shadow: 0 0 30px rgba(255, 70, 85, 0.8);
+            transform: translateY(-2px);
+        }
+
+        button.submit-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* 診断結果エリア */
+        #result-area {
+            display: none;
+            background: var(--card-bg);
+            border: 2px solid var(--apex-green);
+            border-radius: 4px;
+            padding: 35px 25px;
+            margin-top: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+            animation: fadeIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .result-header {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            color: var(--apex-cyan);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .result-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: #ffffff;
+            font-weight: 900;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px var(--apex-green);
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+            padding-bottom: 15px;
+        }
+
+        .result-item {
+            margin-bottom: 22px;
+            padding: 15px;
+            background: rgba(10, 12, 16, 0.6);
+            border-left: 3px solid var(--apex-gold);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .result-item-title {
+            font-weight: 700;
+            color: var(--apex-gold);
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            letter-spacing: 0.5px;
+        }
+
+        .result-item-body {
+            line-height: 1.6;
+            color: #d1d5db;
+            font-size: 0.95rem;
+        }
+
+        .retry-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 12px 30px;
+            font-family: 'Orbitron', 'Noto Sans JP', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto 0;
+            transition: all 0.3s;
+        }
+
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ffffff;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.6rem; }
+            h1::before, h1::after { display: none; }
+            .question-card { padding: 18px; }
+            .result-title { font-size: 1.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="title-tag">Apex Legends Analysis System</div>
+            <h1>性格診断</h1>
+        </header>
+
+        <form id="diagnosis-form">
+            <!-- Q1: 武器選択 -->
+            <div class="question-card">
+                <div class="question-title">Q1. メイン武器とサブ武器の組み合わせを選んでください</div>
+                
+                <label class="select-label">メイン武器</label>
+                <select id="weapon1" required>
+                    <option value="">選択してください</option>
+                    <optgroup label="アサルトライフル (AR)">
+                        <option value="AR">R-301 / フラットライン / ハボック / ヘムロック / ネメシス</option>
+                    </optgroup>
+                    <optgroup label="サブマシンガン (SMG)">
+                        <option value="SMG">R-99 / ボルト / C.A.R. / プラウラー / オルタネーター</option>
+                    </optgroup>
+                    <optgroup label="ライトマシンガン (LMG)">
+                        <option value="LMG">スピットファイア / ディボーション / L-スター / ランページ</option>
+                    </optgroup>
+                    <optgroup label="マークスマン (MR)">
+                        <option value="MR">G7スカウト / 30-30 / トリプルテイク / ボセック</option>
+                    </optgroup>
+                    <optgroup label="スナイパー (SR)">
+                        <option value="SR">ロングボウ / チャージライフル / センチネル / クレーバー</option>
+                    </optgroup>
+                    <optgroup label="ショットガン (SG)">
+                        <option value="SG">ピースキーパー / EVA-8 / マスティフ / モザンビーク</option>
+                    </optgroup>
+                    <optgroup label="ピストル">
+                        <option value="PISTOL">ウィングマン / RE-45 / P2020</option>
+                    </optgroup>
+                </select>
+
+                <br><br>
+
+                <label class="select-label">サブ武器</label>
+                <select id="weapon2" required>
+                    <option value="">選択してください</option>
+                    <optgroup label="アサルトライフル (AR)">
+                        <option value="AR">R-301 / フラットライン / ハボック / ヘムロック / ネメシス</option>
+                    </optgroup>
+                    <optgroup label="サブマシンガン (SMG)">
+                        <option value="SMG">R-99 / ボルト / C.A.R. / プラウラー / オルタネーター</option>
+                    </optgroup>
+                    <optgroup label="ライトマシンガン (LMG)">
+                        <option value="LMG">スピットファイア / ディボーション / L-スター / ランページ</option>
+                    </optgroup>
+                    <optgroup label="マークスマン (MR)">
+                        <option value="MR">G7スカウト / 30-30 / トリプルテイク / ボセック</option>
+                    </optgroup>
+                    <optgroup label="スナイパー (SR)">
+                        <option value="SR">ロングボウ / チャージライフル / センチネル / クレーバー</option>
+                    </optgroup>
+                    <optgroup label="ショットガン (SG)">
+                        <option value="SG">ピースキーパー / EVA-8 / マスティフ / モザンビーク</option>
+                    </optgroup>
+                    <optgroup label="ピストル">
+                        <option value="PISTOL">ウィングマン / RE-45 / P2020</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- Q2: グレネード -->
+            <div class="question-card">
+                <div class="question-title">Q2. グレネードは普段どれくらい持ちますか？</div>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="grenade" value="0" required> 0個（持たない）</label>
+                    <label class="radio-label"><input type="radio" name="grenade" value="1"> 1個～2個</label>
+                    <label class="radio-label"><input type="radio" name="grenade" value="2"> 3個～4個</label>
+                    <label class="radio-label"><input type="radio" name="grenade" value="3"> 5個以上</label>
+                </div>
+            </div>
+
+            <!-- Q3: アタッチメント優先度 -->
+            <div class="question-card">
+                <div class="question-title">Q3. アタッチメントで最も優先して拾う・探すものは？</div>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="attachment" value="A" required> 拡張マガジン</label>
+                    <label class="radio-label"><input type="radio" name="attachment" value="B"> サイト（スコープ）</label>
+                    <label class="radio-label"><input type="radio" name="attachment" value="C"> バレルスタビライザー / レーザーサイト</label>
+                    <label class="radio-label"><input type="radio" name="attachment" value="D"> 標準ストック / スナイパーストック</label>
+                    <label class="radio-label"><input type="radio" name="attachment" value="E"> ポップアップ（ターボチャージャーなど）</label>
+                </div>
+            </div>
+
+            <!-- Q4: 回復アイテム -->
+            <div class="question-card">
+                <div class="question-title">Q4. 回復アイテムの持ち方は？</div>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="heal" value="A" required> シールドを多く持つ</label>
+                    <label class="radio-label"><input type="radio" name="heal" value="B"> 特にこだわりがなく適度に持つ</label>
+                    <label class="radio-label"><input type="radio" name="heal" value="C"> フェニックスキットをひとつまみする</label>
+                    <label class="radio-label"><input type="radio" name="heal" value="D"> 隙間があると回復を持つ</label>
+                    <label class="radio-label"><input type="radio" name="heal" value="E"> 回復をあまり持たない</label>
+                </div>
+            </div>
+
+            <button type="button" class="submit-btn" onclick="diagnose()">診断結果を見る</button>
+        </form>
+
+        <!-- 結果表示エリア -->
+        <div id="result-area">
+            <div class="result-header">DIAGNOSIS RESULT</div>
+            <div class="result-title" id="res-title">---</div>
+
+            <div class="result-item">
+                <div class="result-item-title">【本質・組み合わせ診断】</div>
+                <div class="result-item-body" id="res-weapon"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-item-title">【グレネードの傾向】</div>
+                <div class="result-item-body" id="res-grenade"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-item-title">【アタッチメント思考】</div>
+                <div class="result-item-body" id="res-attachment"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-item-title">【回復アイテムの習性】</div>
+                <div class="result-item-body" id="res-heal"></div>
+            </div>
+
+            <button class="retry-btn" onclick="location.reload()">RETRY DIAGNOSIS</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. 武器カテゴリー組み合わせデータ (28パターン)
+        const weaponData = {
+            "AR-AR": { title: "特別人間", text: "自分の中にルーティーンがある。プライドが高く人がいじられると気分がいいが自分が標的にされると異常に怒る。" },
+            "AR-SMG": { title: "変態人間", text: "自分の中では健常者だと思っているが実際は異常者寄り。性癖が終わってる。" },
+            "AR-LMG": { title: "傾き人間", text: "片方に重心を持つ少しずれている人間。好きなベイブレードはスタジアムの外壁を回り続けるスタミナタイプ。" },
+            "AR-MR": { title: "繊細人間", text: "神経が擦り減るようなことをされるのはとても苦手とするがするのは好き。" },
+            "AR-SR": { title: "欲望人間", text: "自分の好きなようにしたい欲が高い。自分の思い通りにいかないとイラつく。癇癪持ち。" },
+            "AR-SG": { title: "責任人間", text: "自分がしっかりしないといけないという他の人を信用していない人間。プライドが高い。" },
+            "AR-PISTOL": { title: "娯楽人間", text: "ある種はとことん苦手である種はとても秀でているアンバランス人間。ボードゲームを3種類持っている。" },
+            "SMG-SMG": { title: "ドパ人間", text: "マルチタスクをよく行うが結局はひとつずつ処理を終わらせている。千手観音が好き。" },
+            "SMG-LMG": { title: "規律人間", text: "マナーに重きを置いている自称よくできた人間。意外とずぼらで部屋が汚い。" },
+            "SMG-MR": { title: "普通人間", text: "短所を補うように長所を使う面白くない人間。パズルが好き。" },
+            "SMG-SR": { title: "極端人間", text: "1か100白か黒どっちつかずになることはない。二択をよく外す。" },
+            "SMG-SG": { title: "高速人間", text: "リアルで足が速い人間。将来禿げる。" },
+            "SMG-PISTOL": { title: "落着き人間", text: "冷静沈着で動揺することはあまりない。身の危険が迫ると自分だけ助かろうとする。" },
+            "LMG-LMG": { title: "筋肉人間", text: "肉付きがよく体格も良い。バイオレンス映画は苦手。" },
+            "LMG-MR": { title: "潔癖人間", text: "人の手を使って犯行に及ぶ某ルフィのような人間。手が荒れている。" },
+            "LMG-SR": { title: "技術人間", text: "最新の機械やガンダムのようなロボットが動くことに心が動く人間。歩く際足と手が同時に前に出る。" },
+            "LMG-SG": { title: "患い人間", text: "体にいつも不調な部位が存在する人間。長生き。" },
+            "LMG-PISTOL": { title: "温厚人間", text: "歩道にある花を踏まないように配慮する人間。虫は視界にうつるたびに殺傷する。" },
+            "MR-MR": { title: "逆張り人間", text: "自分ではなく他人の目が気になる異常個体。枕はそば粉が入っているものを使っている。" },
+            "MR-SR": { title: "器用人間", text: "家庭科の授業はほかの人の糸を通して無双していた人間。人間を扱うのは苦手。" },
+            "MR-SG": { title: "表明人間", text: "裏表のない素直な性格の人間。スマホのアプリ数が異常に多い。" },
+            "MR-PISTOL": { title: "飽き性人間", text: "何も続かない光を浴びたことのない人間。ポテンシャルは高め。" },
+            "SR-SR": { title: "革命児", text: "新たな風を吹かせようと行動をするが二番煎じか不評の二択になる。ほくろが多い。" },
+            "SR-SG": { title: "労り人間", text: "人に気を使いすぎて自分が滅ぶ人間。一度の成功にうまみを見出しすぎている。" },
+            "SR-PISTOL": { title: "尖り人間", text: "ほかの人とは違うことをしようと挑戦してみるがうまくいかない人間。好きな色はあいいろ。" },
+            "SG-SG": { title: "記憶人間", text: "副教科が得意でそこで英語の点数を補っている。好き嫌いはあまりない。" },
+            "SG-PISTOL": { title: "リズム人間", text: "店内BGMばかり気にしている人間。小指が短い。" },
+            "PISTOL-PISTOL": { title: "巨人", text: "ケニーにあこがれている髪型マルコの性格ベルトルト人間。漫画よりも電子派。" }
+        };
+
+        // 2. グレネードデータ (4パターン)
+        const grenadeData = {
+            "0": "投擲物を信用していない可哀想な人間。自分しか信用できないナルシスト傾向あり。",
+            "1": "一歩引いた視野を持っているが、土壇場に弱く本番でミスをしやすい人間。",
+            "2": "物事を計画通りに進めたい几帳面なタイプ。想定外のトラブルが起きるとフリーズする。",
+            "3": "破壊衝動を秘めた危ない人間。ストレスが溜まると爆発するタイプ。"
+        };
+
+        // 3. アタッチメント優先順位データ (5パターン)
+        const attachmentData = {
+            "A": "【拡張マガジン優先】質より量。数打ちゃ当たると思っている大雑把な性格。",
+            "B": "【サイト優先】形から入るタイプ。形は綺麗だが中身が伴わないことが多い。",
+            "C": "【バレル/レーザー優先】ブレを極端に嫌う心配性。安心感を常に求めている。",
+            "D": "【ストック優先】操作感や快適性を重視するこだわり派。譲れない持論が多い。",
+            "E": "【ポップアップ優先】一発逆転やロマンを追い求めるギャンブラー性質。"
+        };
+
+        // 4. 回復アイテム持ち方データ (5パターン)
+        const healData = {
+            "A": "【起点役】シールドを割られすぎて被ダメだけでハンマーを狙えるタンク役。味方のために持っているという輩もいるがそれは建前。",
+            "B": "【気が弱い】自分の意思を持たず流れるままに生きる浮浪者。話していると話に芯がなく会話を続ける意味がない。",
+            "C": "【依存者】ギリギリの体力でフェニックスキットを使うことに快楽を覚えている危ないひと。酒癖が悪い。",
+            "D": "【温室育ち】生まれながらにして環境が良くあまり苦労をしていない軟な性格。情熱がなく飽き性で無能。",
+            "E": "【サバイバー】ゲームを理解していない無能。乞食初期症状に多いカス。"
+        };
+
+        function diagnose() {
+            const w1 = document.getElementById("weapon1").value;
+            const w2 = document.getElementById("weapon2").value;
+            const grenade = document.querySelector('input[name="grenade"]:checked');
+            const attachment = document.querySelector('input[name="attachment"]:checked');
+            const heal = document.querySelector('input[name="heal"]:checked');
+
+            if (!w1 || !w2 || !grenade || !attachment || !heal) {
+                alert("すべての質問にお答えください！");
+                return;
+            }
+
+            // 武器キーの並び順を統一（順不同対応）
+            const order = ["AR", "SMG", "LMG", "MR", "SR", "SG", "PISTOL"];
+            let key = "";
+            if (order.indexOf(w1) <= order.indexOf(w2)) {
+                key = `${w1}-${w2}`;
+            } else {
+                key = `${w2}-${w1}`;
+            }
+
+            const wResult = weaponData[key];
+            
+            // 画面反映
+            document.getElementById("res-title").innerText = `『${wResult.title}』`;
+            document.getElementById("res-weapon").innerText = wResult.text;
+            document.getElementById("res-grenade").innerText = grenadeData[grenade.value];
+            document.getElementById("res-attachment").innerText = attachmentData[attachment.value];
+            document.getElementById("res-heal").innerText = healData[heal.value];
+
+            // フォームを非表示にして結果を表示
+            document.getElementById("diagnosis-form").style.display = "none";
+            document.getElementById("result-area").style.display = "block";
+            
+            // 結果エリアへスクロール
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
